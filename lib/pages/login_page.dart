@@ -1,5 +1,6 @@
 // ignore_for_file: prefer_const_constructors
-
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:mitchkoko_flutter_tutorial/components/my_button.dart';
 import 'package:mitchkoko_flutter_tutorial/components/textfield.dart';
@@ -7,12 +8,43 @@ import 'package:mitchkoko_flutter_tutorial/components/textfield.dart';
 class LoginPage extends StatelessWidget {
   LoginPage({super.key});
 
-  // text editing controllers
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
 
-  // sign user in method
-  void signUserIn() {}
+  void signUserIn(BuildContext context) async {
+    final response = await http.post(
+      Uri.parse('http://192.168.0.183:3000/login'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode(<String, String>{
+        'email': emailController.text,
+        'password': passwordController.text,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      // Successful login
+      Navigator.pushNamed(context, '/homepage'); // Navigate to home page
+    } else {
+      // Failed login
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Text('Error'),
+          content: Text('Error while login.'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog
+              },
+              child: Text('OK'),
+            ),
+          ],
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +58,6 @@ class LoginPage extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   SizedBox(height: 50),
-                  // logo
                   Text(
                     "Login",
                     style: TextStyle(
@@ -35,30 +66,21 @@ class LoginPage extends StatelessWidget {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-
                   SizedBox(height: 50),
-
-                  // username textfield
                   MyTextField(
                     controller: emailController,
                     hintText: 'Username',
                     obscureText: false,
                     icons: Icon(Icons.person),
                   ),
-
                   SizedBox(height: 25),
-
-                  // password textfield
                   MyTextField(
                     controller: passwordController,
                     hintText: 'Password',
                     obscureText: true,
                     icons: Icon(Icons.lock),
                   ),
-
                   SizedBox(height: 10),
-
-                  // forgot password
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 25.0),
                     child: Row(
@@ -73,19 +95,14 @@ class LoginPage extends StatelessWidget {
                       ],
                     ),
                   ),
-
                   SizedBox(height: 25),
-
-                  // sign in button
-                  MyButton(text: "L O G I N", onTap: signUserIn),
-
+                  MyButton(text: "L O G I N", onTap: () => signUserIn(context)),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text("Don\'t have an account?"),
+                      Text("Don't have an account?"),
                       TextButton(
                         onPressed: () {
-                          // navigate to login page
                           Navigator.pushNamed(context, '/registerpage');
                         },
                         child: Text(
